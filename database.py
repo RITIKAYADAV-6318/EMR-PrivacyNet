@@ -35,7 +35,13 @@ def init_db():
             address TEXT,
             diagnosis TEXT,
             medications TEXT,
-            visit_notes TEXT
+            visit_notes TEXT,
+            systolic_bp INTEGER,
+            diastolic_bp INTEGER,
+            bmi REAL,
+            smoking_status TEXT,
+            family_history TEXT,
+            prior_conditions_count INTEGER
         )
     """)
 
