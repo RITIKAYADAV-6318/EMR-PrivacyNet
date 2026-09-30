@@ -28,6 +28,9 @@ def doctor_view():
     patients = cursor.fetchall()
     conn.close()
 
+    from audit import log_access
+    log_access(st.session_state["username"], "doctor", "Viewed patient list")
+
     for p in patients:
         with st.expander(f"{p['name']} — {p['diagnosis']}"):
             st.write(f"**DOB:** {p['dob']}")
@@ -46,11 +49,45 @@ def receptionist_view():
     patients = cursor.fetchall()
     conn.close()
 
+    from audit import log_access
+    log_access(st.session_state["username"], "receptionist", "Viewed patient list")
+    
     for p in patients:
         with st.expander(p["name"]):
             st.write(f"**Contact:** {p['contact']}")
             st.write("*(Appointment info will be shown here once appointments are seeded.)*")
 
+def researcher_view():
+    st.header("Researcher Dashboard — De-identified Data")
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM patients")
+    patients = cursor.fetchall()
+    conn.close()
+
+    from audit import log_access
+    log_access(st.session_state["username"], "researcher", "Viewed de-identified data")
+    
+    from deidentify import deidentify_patient
+
+    rows = [deidentify_patient(dict(p)) for p in patients]
+
+    import pandas as pd
+    st.dataframe(pd.DataFrame(rows), use_container_width=True)
+    st.caption("All identifying information has been removed or generalized. "
+               "This view never accesses patient names, contact details, or exact addresses/dates of birth.")
+
+
+def admin_view():
+    st.header("Admin — Audit Log")
+    from audit import get_audit_log
+    import pandas as pd
+    logs = get_audit_log()
+    if logs:
+        df = pd.DataFrame([dict(row) for row in logs])
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.info("No audit log entries yet.") 
 
 def main():
     if "role" not in st.session_state:
@@ -67,6 +104,10 @@ def main():
         doctor_view()
     elif role == "receptionist":
         receptionist_view()
+    elif role == "researcher":
+        researcher_view()
+    elif role == "admin":
+        admin_view()    
     else:
         st.info(f"'{role}' view not yet built — coming in later days.")
 
