@@ -31,6 +31,8 @@ def doctor_view():
     from audit import log_access
     log_access(st.session_state["username"], "doctor", "Viewed patient list")
 
+    from llm_summarizer import summarize_note
+
     for p in patients:
         with st.expander(f"{p['name']} — {p['diagnosis']}"):
             st.write(f"**DOB:** {p['dob']}")
@@ -39,6 +41,18 @@ def doctor_view():
             st.write(f"**Diagnosis:** {p['diagnosis']}")
             st.write(f"**Medications:** {p['medications']}")
             st.write(f"**Visit Notes:** {p['visit_notes']}")
+
+            if st.button("🔍 Summarize Note (AI)", key=f"summarize_{p['id']}"):
+                with st.spinner("Summarizing..."):
+                    summary = summarize_note(p['visit_notes'])
+                st.markdown("**AI-Generated Summary**")
+                st.write(f"**Symptoms:** {', '.join(summary['symptoms'])}")
+                st.write(f"**{summary['probable_diagnosis']}**")
+                st.write(f"**Follow-up Plan:** {summary['follow_up_plan']}")
+                st.write(f"**Flags:** {summary['flags']}")
+                st.caption("⚠️ This is an AI-generated documentation aid, not a diagnosis. Always verify against clinical judgment.")
+
+                log_access(st.session_state["username"], "doctor", f"AI-summarized note for patient {p['id']}", patient_id=p['id'])
 
 
 def receptionist_view():
