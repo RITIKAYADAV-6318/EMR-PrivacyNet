@@ -73,12 +73,15 @@ h1, h2, h3 {
     background: linear-gradient(135deg, #4a94d8 0%, #1d529a 100%);
 }
 
-.stTextInput > div > div > input {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    color: #ffffff;
+.stApp input {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+}
+.stApp input::placeholder {
+    color: #b7c4d6 !important;
+    opacity: 1;
 }
 
 [data-testid="stDataFrame"] {
