@@ -1,16 +1,17 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from auth import verify_login
-from database import get_connection
+from database import init_db, get_connection
 
-import os
-from database import init_db, get_connection as _check_connection
+init_db()  # safe to call every time; CREATE TABLE IF NOT EXISTS won't duplicate anything
 
-DB_PATH = os.path.join("data", "emr.db")
+_conn = get_connection()
+_cursor = _conn.cursor()
+_cursor.execute("SELECT COUNT(*) as cnt FROM users")
+_user_count = _cursor.fetchone()["cnt"]
+_conn.close()
 
-if not os.path.exists(DB_PATH):
-    os.makedirs("data", exist_ok=True)
-    init_db()
+if _user_count == 0:
     from seed_data import seed_users, seed_patients
     seed_users()
     seed_patients()
