@@ -32,6 +32,7 @@ def doctor_view():
     log_access(st.session_state["username"], "doctor", "Viewed patient list")
 
     from llm_summarizer import summarize_note
+    from risk_model import predict_risk, explain_risk
 
     for p in patients:
         with st.expander(f"{p['name']} — {p['diagnosis']}"):
@@ -54,6 +55,32 @@ def doctor_view():
 
                 log_access(st.session_state["username"], "doctor", f"AI-summarized note for patient {p['id']}", patient_id=p['id'])
 
+            st.divider()
+
+            patient_features = {
+                "age": 2026 - int(p['dob'].split('-')[0]),
+                "systolic_bp": p['systolic_bp'],
+                "diastolic_bp": p['diastolic_bp'],
+                "bmi": p['bmi'],
+                "smoking_binary": 1 if p['smoking_status'] == "Current smoker" else 0,
+                "family_history_binary": 1 if p['family_history'] == "Yes" else 0,
+                "prior_conditions_count": p['prior_conditions_count'],
+            }
+
+            label, probability = predict_risk(patient_features)
+            risk_color = "🔴" if label == "High Risk" else "🟢"
+            st.markdown(f"**Risk Flag:** {risk_color} {label} ({probability:.1%} probability)")
+
+            if label == "High Risk":
+                top_factors = explain_risk(patient_features)
+                factor_names = {
+                    "age": "Age", "systolic_bp": "Systolic BP", "diastolic_bp": "Diastolic BP",
+                    "bmi": "BMI", "smoking_binary": "Smoking status",
+                    "family_history_binary": "Family history", "prior_conditions_count": "Prior conditions"
+                }
+                factors_str = ", ".join([factor_names[f] for f, _ in top_factors])
+                st.caption(f"Top contributing factors: {factors_str}")
+
 
 def receptionist_view():
     st.header(f"Receptionist Dashboard — Welcome, {st.session_state['username']}")
@@ -65,11 +92,12 @@ def receptionist_view():
 
     from audit import log_access
     log_access(st.session_state["username"], "receptionist", "Viewed patient list")
-    
+
     for p in patients:
         with st.expander(p["name"]):
             st.write(f"**Contact:** {p['contact']}")
             st.write("*(Appointment info will be shown here once appointments are seeded.)*")
+
 
 def researcher_view():
     st.header("Researcher Dashboard — De-identified Data")
@@ -81,7 +109,7 @@ def researcher_view():
 
     from audit import log_access
     log_access(st.session_state["username"], "researcher", "Viewed de-identified data")
-    
+
     from deidentify import deidentify_patient
 
     rows = [deidentify_patient(dict(p)) for p in patients]
@@ -101,7 +129,8 @@ def admin_view():
         df = pd.DataFrame([dict(row) for row in logs])
         st.dataframe(df, use_container_width=True)
     else:
-        st.info("No audit log entries yet.") 
+        st.info("No audit log entries yet.")
+
 
 def main():
     if "role" not in st.session_state:
@@ -121,7 +150,7 @@ def main():
     elif role == "researcher":
         researcher_view()
     elif role == "admin":
-        admin_view()    
+        admin_view()
     else:
         st.info(f"'{role}' view not yet built — coming in later days.")
 
