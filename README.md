@@ -74,6 +74,8 @@ All accounts use synthetic test data only.
 - **hashlib (PBKDF2-HMAC-SHA256)** — password hashing
 
 ---
+# Live app - 
+https://emr-privacynet-epdg9scmdpuerokjry76hb.streamlit.app/
 
 ## How to Run Locally
 
