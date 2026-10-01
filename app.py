@@ -3,6 +3,18 @@ import streamlit.components.v1 as components
 from auth import verify_login
 from database import get_connection
 
+import os
+from database import init_db, get_connection as _check_connection
+
+DB_PATH = os.path.join("data", "emr.db")
+
+if not os.path.exists(DB_PATH):
+    os.makedirs("data", exist_ok=True)
+    init_db()
+    from seed_data import seed_users, seed_patients
+    seed_users()
+    seed_patients()
+
 st.set_page_config(page_title="EMR-PrivacyNet", layout="wide")
 
 from style_block import APP_CSS, LOGIN_BG_HTML, HEADER_HTML, FOOTER_HTML, ABOUT_SECTION_HTML
