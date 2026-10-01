@@ -2,9 +2,13 @@ from google import genai
 from dotenv import load_dotenv
 import os
 import json
+import streamlit as st
 
 load_dotenv()
-client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+api_key = os.getenv("GOOGLE_API_KEY") or st.secrets.get("GOOGLE_API_KEY")
+client = genai.Client(api_key=api_key)
+
+
 
 SYSTEM_PROMPT = """You are a clinical documentation assistant. You will be given a doctor's free-text visit note. 
 Extract the information into strict JSON with exactly these fields:
