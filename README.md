@@ -24,7 +24,6 @@ All accounts use synthetic test data only.
 
 ## Skills Demonstrated
 
-This project was built to directly reflect the skills listed for the Koshika Foundation EMR Integration research internship at DTU:
 
 | Skill from posting | How it's demonstrated here |
 |---|---|
